@@ -20,7 +20,16 @@ Real-world recommenders like Spotify and YouTube predict what users will enjoy b
 
 ### Sample Output
 
-![Recommendation Output](Recommendation_Output.png)
+![Sample Output](assets/Sample_Output.png)
+
+### Adversarial Profile Outputs
+
+![Adversarial Profile 1](assets/Recommendations_for_Adversarial_Profile_1.png)
+![Adversarial Profile 2](assets/Recommendations_for_Adversarial_Profile_2.png)
+![Adversarial Profile 3](assets/Recommendations_for_Adversarial_Profile_3.png)
+![Adversarial Profile 4](assets/Recommendations_for_Adversarial_Profile_4.png)
+![Adversarial Profile 5](assets/Recommendations_for_Adversarial_Profile_5.png)
+![Adversarial Profile 6](assets/Recommendations_for_Adversarial_Profile_6.png)
 
 ### Plan
 We score every song in the catalog against the user profile using a weighted additive formula. Genre and mood use partial-credit lookup tables so related genres and moods get meaningful scores instead of zero. Numeric features like energy and valence use linear proximity — the closer the song's value is to the user's target, the higher the score. All 7 component scores are multiplied by their weights and summed to a final score in [0.0, 1.0]. Songs are then ranked descending by score, with ties broken by song id, and the top-k are returned.
