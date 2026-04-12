@@ -19,11 +19,9 @@ Replace this paragraph with your own summary of what your version does.
 Real-world recommenders like Spotify and YouTube predict what users will enjoy by combining two strategies: collaborative filtering, which surfaces content based on patterns across millions of users, and content-based filtering, which matches content to a user based on the item's own measurable attributes. My version of Music Recommender Simulation focuses entirely on content-based filtering. This version will prioritize genre as the most stable and decisive signal of a user's taste, energy level to match the listener's activity context, and valence to reflect the emotional tone a user is seeking — making every recommendation fully explainable from the song's own features rather than relying on what other users listened to.
 
 ### Sample Output
-
 ![Sample Output](assets/Sample_Output.png)
 
 ### Adversarial Profile Outputs
-
 ![Adversarial Profile 1](assets/Recommendations_for_Adversarial_Profile_1.png)
 ![Adversarial Profile 2](assets/Recommendations_for_Adversarial_Profile_2.png)
 ![Adversarial Profile 3](assets/Recommendations_for_Adversarial_Profile_3.png)
