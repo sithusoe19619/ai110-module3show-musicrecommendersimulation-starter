@@ -9,20 +9,22 @@ You will implement the functions in recommender.py:
 - recommend_songs
 """
 
+import sys
 from recommender import load_songs, recommend_songs, list_modes
-
-# ─── SCORING STRATEGY ────────────────────────────────────────────────────────
-# ACTIVE_MODE  — the strategy to use when COMPARE_ALL is False.
-#                options: "balanced", "genre_first", "mood_first", "energy_focused"
-# COMPARE_ALL  — set True to run all strategies side by side for comparison.
-#                set False to run only ACTIVE_MODE.
-ACTIVE_MODE = "genre_first"
-COMPARE_ALL = True
-# ─────────────────────────────────────────────────────────────────────────────
 
 
 def main() -> None:
-    modes = list_modes() if COMPARE_ALL else [ACTIVE_MODE]
+    available = list_modes()
+
+    if len(sys.argv) > 1:
+        mode_arg = sys.argv[1]
+        if mode_arg not in available:
+            print(f"Unknown mode '{mode_arg}'.")
+            print(f"Available modes: {', '.join(available)}")
+            sys.exit(1)
+        modes = [mode_arg]
+    else:
+        modes = available
 
     songs = load_songs("data/songs.csv")
     print(f"Loaded songs: {len(songs)}")
@@ -166,7 +168,7 @@ def main() -> None:
         ("High-Energy Pop", high_energy_pop),
         ("Chill Lofi", chill_lofi),
         ("Deep Intense Rock", deep_intense_rock),
-        ("High-Energy Sad", high_energy_sad),
+        ("High-Energy + Sad", high_energy_sad),
         ("Metal + Peaceful", metal_peaceful),
         ("Acoustic Electronic", acoustic_electronic),
         ("Orphan Genre (World)", orphan_genre_world),

@@ -270,9 +270,40 @@ def score_song(user_prefs: Dict, song: Dict, weights: Dict) -> Tuple[float, List
 
     return total_score, reasons
 
-def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5, mode: str = "balanced") -> List[Tuple[Dict, float, str]]:
-    """Score all songs, rank them, and return the top-k as (song, score, explanation) tuples."""
+def recommend_songs(
+    user_prefs: Dict,
+    songs: List[Dict],
+    k: int = 5,
+    mode: str = "balanced",
+    artist_penalty: float = 0.80,
+    genre_penalty: float = 0.90,
+) -> List[Tuple[Dict, float, str]]:
+    """Score all songs, rank them, and return the top-k as (song, score, explanation) tuples.
+
+    artist_penalty: multiplier applied per additional appearance of the same artist (default 0.80).
+    genre_penalty:  multiplier applied per additional appearance of the same genre  (default 0.90).
+    Both penalties stack cumulatively — the more an artist/genre repeats, the lower the score gets.
+    First appearance of any artist or genre is never penalized.
+    """
     weights = SCORING_MODES.get(mode, SCORING_MODES["balanced"])
     scored = [(song, *score_song(user_prefs, song, weights)) for song in songs]
     ranked = sorted(scored, key=lambda x: (-x[1], x[0]["id"]))
-    return [(song, score, " | ".join(reasons)) for song, score, reasons in ranked[:min(k, len(songs))]]
+
+    selected = []
+    artist_counts = {}
+    genre_counts = {}
+
+    for song, score, reasons in ranked:
+        if len(selected) == k:
+            break
+        # penalty compounds with each repeat: 0.80^n for artist, 0.90^n for genre
+        # first occurrence (count=0) → multiplier = 1.0, no penalty
+        a_count = artist_counts.get(song["artist"], 0)
+        g_count = genre_counts.get(song["genre"], 0)
+        multiplier = (artist_penalty ** a_count) * (genre_penalty ** g_count)
+        penalized_score = score * multiplier
+        selected.append((song, penalized_score, " | ".join(reasons)))
+        artist_counts[song["artist"]] = a_count + 1
+        genre_counts[song["genre"]] = g_count + 1
+
+    return selected
