@@ -2,62 +2,55 @@
 
 ## 1. Model Name  
 
-Give your model a short, descriptive name.  
-Example: **VibeFinder 1.0**  
+**VibeSync 1.0**
 
----
+----------------------------------------------------------------------------
 
 ## 2. Intended Use  
 
-Describe what your recommender is designed to do and who it is for. 
+VibeSync 1.0 suggests songs from a small catalog based on a user's stated preferences. It is designed for classroom exploration, not a real product.
 
-Prompts:  
+- It generates a ranked list of up to 5 songs that best match what the user says they like.
+- It assumes users can clearly describe their preferences upfront — favorite genre, mood, energy level, and a few yes/no choices. There is no listening history or implicit feedback.
+- This is a simulation built to learn how recommender systems work, not to be deployed for real users.
 
-- What kind of recommendations does it generate  
-- What assumptions does it make about the user  
-- Is this for real users or classroom exploration  
-
----
+----------------------------------------------------------------------------
 
 ## 3. How the Model Works  
 
-Explain your scoring approach in simple language.  
+Every song gets a score from 0 to 1 based on how closely it matches the user's preferences. The song with the highest score is recommended first.
 
-Prompts:  
+Seven features are used — genre, energy, valence, mood, acousticness, popularity, and release year. Each one contributes a slice of the total score based on its weight:
 
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
-- How does the model turn those into a score  
-- What changes did you make from the starter logic  
+- Genre (30%) — exact match scores full points; similar genres get partial credit; unrelated genres score zero.
+- Energy (25%) — the closer a song's energy is to the user's target, the higher this part of the score.
+- Valence (20%) — the user's mood label maps to a target "positivity" value; songs closer to that value score higher.
+- Mood (10%) — exact mood match scores full points; similar moods get partial credit.
+- Acousticness, popularity, and release year each contribute 5%.
 
-Avoid code here. Pretend you are explaining the idea to a friend who does not program.
+The user provides: favorite genre, favorite mood, target energy, whether they like acoustic music, whether they prefer mainstream songs, and whether they prefer recent releases. The model turns those inputs into a single number per song and returns the top 5.
 
----
+----------------------------------------------------------------------------
 
 ## 4. Data  
 
-Describe the dataset the model uses.  
+The catalog contains 20 hand-crafted songs. Each song has 12 attributes: id, title, artist, genre, mood, energy, tempo, valence, danceability, acousticness, popularity, and release year.
 
-Prompts:  
+- 17 genres are represented including pop, rock, hip-hop, lofi, jazz, metal, folk, classical, ambient, electronic, synthwave, indie pop, dream pop, funk, world, acoustic, and emo.
+- 16 mood labels are used including happy, chill, intense, relaxed, sad, energetic, peaceful, dark, and aggressive.
+- Popularity and release year were added to the starter dataset to support two additional scoring features.
+- Several gaps exist: all songs were released between 2017 and 2023, energy values cluster in the mid-to-high range (very calm music is underrepresented), and niche genres like world and classical have only one song each.
 
-- How many songs are in the catalog  
-- What genres or moods are represented  
-- Did you add or remove data  
-- Are there parts of musical taste missing in the dataset  
-
----
+----------------------------------------------------------------------------
 
 ## 5. Strengths  
 
-Where does your system seem to work well  
+- Users with mainstream genre preferences (pop, rock, hip-hop) get the most useful results because those genres have the most songs and similarity connections in the catalog.
+- Energy matching works reliably when the user's target falls in the mid range (0.35–0.80), which is where most songs live.
+- Chill and lofi profiles consistently returned calm, low-energy songs that matched what a real listener with those preferences would enjoy.
+- The score breakdown in the output makes it easy to see exactly why each song ranked where it did — more transparent than most real recommender systems.
 
-Prompts:  
-
-- User types for which it gives reasonable results  
-- Any patterns you think your scoring captures correctly  
-- Cases where the recommendations matched your intuition  
-
----
+----------------------------------------------------------------------------
 
 ## 6. Limitations and Bias
 
@@ -79,7 +72,7 @@ When a user picks a mood label like "intense" or "dark," the system silently map
 **The popularity and release year features cannot reward true outlier preferences.**
 The system sets a popularity target of 0.25 for users who dislike mainstream music, but the least popular song in the dataset has a popularity score of 29 (0.29 normalized) — barely below the mainstream threshold. There are no truly underground tracks in the catalog, so anti-mainstream users are never actually rewarded. Similarly, users who prefer older music are assigned a target year of 2018, which is still quite recent; the entire dataset spans only 2017–2023, making it impossible to surface genuinely nostalgic recommendations for listeners who prefer music from earlier decades.
 
----
+----------------------------------------------------------------------------
 
 ## 7. Evaluation
 
@@ -99,27 +92,70 @@ For each profile we ran `recommend_songs` against the full 20-song catalog and e
 
 - *Removing the mood component entirely in a controlled experiment only caused two songs to swap positions* (Gym Hero and Rooftop Lights at #2 and #3). This confirmed that mood influences the ranking but cannot override genre — it only matters when two songs are already close in score.
 
----
+----------------------------------------------------------------------------
 
 ## 8. Future Work  
 
-Ideas for how you would improve the model next.  
+- Lower the genre weight and raise the mood weight so emotional preference has a real chance to influence results, not just tiebreak them.
+- Replace the binary `likes_acoustic` and `likes_mainstream` flags with a 0–1 slider so users can express nuanced taste instead of being forced into one of two extremes.
+- Add a diversity filter so the top 5 results cannot all come from the same genre — this would help surface songs users wouldn't have searched for on their own.
 
-Prompts:  
-
-- Additional features or preferences  
-- Better ways to explain recommendations  
-- Improving diversity among the top results  
-- Handling more complex user tastes  
-
----
+----------------------------------------------------------------------------
 
 ## 9. Personal Reflection  
 
-A few sentences about your experience.  
+Going into this project, I thought the hard part would be the code. It wasn't. The hard part was deciding what mattered. Every time I assigned a weight, I was making a claim about what music taste actually is — and those claims turned out to be wrong in ways I didn't expect. The moment that stuck with me most was when I removed mood from the scoring entirely and almost nothing changed. I had spent real time designing the mood lookup table, checking similarity values, making sure it felt right. And the algorithm just... didn't care. That was humbling. It made me realize that building a system and understanding a system are two very different things.
 
-Prompts:  
+AI tools helped me move faster, especially when generating the genre and mood similarity tables. But I learned quickly that I couldn't just trust the output. Some of the suggested valence mappings sounded right on the surface but fell apart when I checked them against actual songs in the catalog. I had to verify everything manually. That back-and-forth — use the tool, then question it — ended up being one of the more useful habits I built during this project.
 
-- What you learned about recommender systems  
-- Something unexpected or interesting you discovered  
-- How this changed the way you think about music recommendation apps  
+What surprised me most was how human the results could feel even though the system has no understanding of music at all. When a chill lofi profile got back calm, quiet songs, it felt like the system "got it." But it didn't get anything. It just multiplied some numbers. That gap — between feeling like a recommendation and actually being one — is something I keep thinking about. Real recommenders on Spotify or YouTube probably feel even more intuitive, but they're doing the same thing at a much larger scale. The intelligence is an illusion built from enough data and enough weights.
+
+If I kept going with this, I'd want to break the binary preferences first. Forcing a user to say "yes acoustic" or "no acoustic" throws away too much nuance. A slider would get closer to how people actually feel about music. After that, I'd grow the catalog and see what breaks — because I suspect the niche genre problem, where world and classical users get stuck with the same narrow results, only gets more visible as the catalog expands and the gaps become harder to ignore.
+
+----------------------------------------------------------------------------  
+
+----------------------------------------------------------------------------
+## Model Card Sections (Summary)
+
+### Model Name
+
+VibeSync 1.0.
+----------------------------------------------------------------------------
+### Goal / Task
+
+It suggests songs a user might enjoy. The user tells it their favorite genre, mood, and energy level. It returns the 5 best matches from the catalog.
+----------------------------------------------------------------------------
+### Data Used
+
+- 20 songs with 12 features each.
+- Covers 17 genres and 16 moods.
+- All songs are from 2017–2023. No older music. Most songs have mid-to-high energy.
+----------------------------------------------------------------------------
+### Algorithm Summary
+
+Each song gets a score from 0 to 1. Genre counts the most (30%). Energy is next (25%). Then mood-based valence (20%). Mood label, acousticness, popularity, and release year each add a small amount. The top 5 songs win.
+----------------------------------------------------------------------------
+### Observed Behavior / Biases
+
+Genre controls the ranking. Changing mood barely moves results. Users who like calm music get poor matches because the catalog skews high-energy. Niche genre users (world, classical) almost always get the same narrow results.
+----------------------------------------------------------------------------
+### Evaluation Process
+
+We tested 9 user profiles. Some were simple (Chill Lofi). Some were contradictory (Metal + Peaceful). One was a niche edge case (World genre). We checked if the results made sense for a real person with those preferences. We also removed mood entirely in one test to see how much it actually mattered.
+----------------------------------------------------------------------------
+### Intended Use and Non-Intended Use
+
+**Use it for:**
+- Learning how recommender systems work.
+- Classroom experiments and exploration.
+
+**Do not use it for:**
+- Real music apps or production systems.
+- Users who want recommendations based on listening history.
+----------------------------------------------------------------------------
+### Ideas for Improvement
+
+- Reduce the genre weight so mood has more say.
+- Replace yes/no acoustic and mainstream options with a slider.
+- Add a rule so the top 5 results come from different genres.
+----------------------------------------------------------------------------
