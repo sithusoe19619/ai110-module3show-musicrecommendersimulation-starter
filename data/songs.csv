@@ -1,21 +1,21 @@
-id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness,popularity,release_year
-1,Sunrise City,Neon Echo,pop,happy,0.82,118,0.84,0.79,0.18,72,2022
-2,Midnight Coding,LoRoom,lofi,chill,0.42,78,0.56,0.62,0.71,58,2021
-3,Storm Runner,Voltline,rock,intense,0.91,152,0.48,0.66,0.10,65,2019
-4,Library Rain,Paper Lanterns,lofi,chill,0.35,72,0.60,0.58,0.86,45,2022
-5,Gym Hero,Max Pulse,pop,intense,0.93,132,0.77,0.88,0.05,81,2023
-6,Spacewalk Thoughts,Orbit Bloom,ambient,chill,0.28,60,0.65,0.41,0.92,38,2020
-7,Coffee Shop Stories,Slow Stereo,jazz,relaxed,0.37,90,0.71,0.54,0.89,42,2019
-8,Night Drive Loop,Neon Echo,synthwave,moody,0.75,110,0.49,0.73,0.22,55,2020
-9,Focus Flow,LoRoom,lofi,focused,0.40,80,0.59,0.60,0.78,61,2022
-10,Rooftop Lights,Indigo Parade,indie pop,happy,0.76,124,0.81,0.82,0.35,67,2021
-11,Golden Fields,Amber Trail,folk,nostalgic,0.33,96,0.68,0.45,0.94,39,2018
-12,Velvet Pulse,Club Phantom,electronic,energetic,0.89,128,0.72,0.91,0.04,74,2022
-13,Ghost of a Letter,Pale Harbor,emo,sad,0.52,108,0.28,0.44,0.62,48,2019
-14,Iron Hymn,Voidcaster,metal,aggressive,0.96,168,0.31,0.38,0.08,44,2020
-15,Sunday Cartoons,Daydream Circus,funk,playful,0.74,112,0.86,0.89,0.29,63,2021
-16,Desert Chapel,Still Water,classical,peaceful,0.19,64,0.58,0.22,0.97,31,2017
-17,Concrete Jungle,Raw Signal,hip-hop,confident,0.78,92,0.69,0.84,0.15,78,2022
-18,Paper Boats,Luna Veil,dream pop,melancholy,0.44,100,0.41,0.52,0.68,41,2020
-19,Monsoon Season,Tabla Roads,world,spiritual,0.56,120,0.63,0.61,0.82,35,2019
-20,Broken Neon,Alias Chrome,industrial,dark,0.85,140,0.25,0.55,0.06,29,2021
+id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness,popularity,release_year,explicit,language,instruments,listening_context,avg_listener_age,subgenre
+1,Sunrise City,Neon Echo,pop,happy,0.82,118,0.84,0.79,0.18,72,2022,0,English,synth|bass|drums|vocals,workout,22,dance pop
+2,Midnight Coding,LoRoom,lofi,chill,0.42,78,0.56,0.62,0.71,58,2021,0,English,piano|guitar|drums,study,24,lo-fi hip hop
+3,Storm Runner,Voltline,rock,intense,0.91,152,0.48,0.66,0.10,65,2019,0,English,guitar|drums|bass,workout,26,hard rock
+4,Library Rain,Paper Lanterns,lofi,chill,0.35,72,0.60,0.58,0.86,45,2022,0,English,piano|guitar|bass,study,23,lo-fi hip hop
+5,Gym Hero,Max Pulse,pop,intense,0.93,132,0.77,0.88,0.05,81,2023,1,English,synth|drums|bass|vocals,workout,21,electropop
+6,Spacewalk Thoughts,Orbit Bloom,ambient,chill,0.28,60,0.65,0.41,0.92,38,2020,0,English,synth|piano|strings,sleep,30,space ambient
+7,Coffee Shop Stories,Slow Stereo,jazz,relaxed,0.37,90,0.71,0.54,0.89,42,2019,0,English,piano|bass|drums,study,34,smooth jazz
+8,Night Drive Loop,Neon Echo,synthwave,moody,0.75,110,0.49,0.73,0.22,55,2020,0,English,synth|bass|drums,commute,28,retro synthwave
+9,Focus Flow,LoRoom,lofi,focused,0.40,80,0.59,0.60,0.78,61,2022,0,English,piano|guitar|bass,study,24,lo-fi hip hop
+10,Rooftop Lights,Indigo Parade,indie pop,happy,0.76,124,0.81,0.82,0.35,67,2021,0,English,guitar|synth|drums|vocals,party,25,dream indie
+11,Golden Fields,Amber Trail,folk,nostalgic,0.33,96,0.68,0.45,0.94,39,2018,0,English,guitar|banjo|vocals,study,38,folk pop
+12,Velvet Pulse,Club Phantom,electronic,energetic,0.89,128,0.72,0.91,0.04,74,2022,0,English,synth|bass|drums,party,23,tech house
+13,Ghost of a Letter,Pale Harbor,emo,sad,0.52,108,0.28,0.44,0.62,48,2019,0,English,guitar|bass|drums|vocals,commute,22,post-hardcore
+14,Iron Hymn,Voidcaster,metal,aggressive,0.96,168,0.31,0.38,0.08,44,2020,1,English,guitar|bass|drums,workout,24,death metal
+15,Sunday Cartoons,Daydream Circus,funk,playful,0.74,112,0.86,0.89,0.29,63,2021,0,English,bass|drums|guitar|vocals,party,29,classic funk
+16,Desert Chapel,Still Water,classical,peaceful,0.19,64,0.58,0.22,0.97,31,2017,0,English,piano|strings|flute,sleep,42,contemporary classical
+17,Concrete Jungle,Raw Signal,hip-hop,confident,0.78,92,0.69,0.84,0.15,78,2022,1,English,bass|drums|synth|vocals,workout,23,trap
+18,Paper Boats,Luna Veil,dream pop,melancholy,0.44,100,0.41,0.52,0.68,41,2020,0,English,guitar|synth|vocals,sleep,27,shoegaze pop
+19,Monsoon Season,Tabla Roads,world,spiritual,0.56,120,0.63,0.61,0.82,35,2019,0,Hindi,tabla|sitar|flute,study,32,Indian classical fusion
+20,Broken Neon,Alias Chrome,industrial,dark,0.85,140,0.25,0.55,0.06,29,2021,1,English,synth|bass|drums,workout,26,dark industrial

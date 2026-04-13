@@ -20,6 +20,12 @@ class Song:
     acousticness: float
     popularity: int
     release_year: int
+    explicit: int
+    language: str
+    instruments: str
+    listening_context: str
+    avg_listener_age: int
+    subgenre: str
 
 @dataclass
 class UserProfile:
@@ -55,7 +61,7 @@ def load_songs(csv_path: str) -> List[Dict]:
     Loads songs from a CSV file.
     Required by src/main.py
     """
-    int_fields = {"id", "popularity", "release_year"}
+    int_fields = {"id", "popularity", "release_year", "explicit", "avg_listener_age"}
     float_fields = {"energy", "valence", "danceability", "acousticness", "tempo_bpm"}
     songs = []
     with open(csv_path, newline="") as f:
@@ -139,62 +145,134 @@ MOOD_SIMILARITY = {
     ("dark", "aggressive"): 0.60, ("aggressive", "dark"): 0.60,
 }
 
-def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
+SCORING_MODES = {
+    "balanced": {
+        "genre": 0.25, "energy": 0.20, "valence": 0.15, "mood": 0.08,
+        "acousticness": 0.04, "popularity": 0.04, "release_year": 0.04,
+        "listening_context": 0.06, "language": 0.05, "instruments": 0.04,
+        "subgenre": 0.03, "explicit": 0.01, "avg_listener_age": 0.01,
+    },
+    "genre_first": {
+        "genre": 0.40, "energy": 0.15, "valence": 0.10, "mood": 0.05,
+        "acousticness": 0.03, "popularity": 0.03, "release_year": 0.02,
+        "listening_context": 0.04, "language": 0.05, "instruments": 0.03,
+        "subgenre": 0.08, "explicit": 0.01, "avg_listener_age": 0.01,
+    },
+    "mood_first": {
+        "genre": 0.15, "energy": 0.12, "valence": 0.20, "mood": 0.20,
+        "acousticness": 0.02, "popularity": 0.02, "release_year": 0.01,
+        "listening_context": 0.15, "language": 0.05, "instruments": 0.03,
+        "subgenre": 0.03, "explicit": 0.01, "avg_listener_age": 0.01,
+    },
+    "energy_focused": {
+        "genre": 0.12, "energy": 0.35, "valence": 0.10, "mood": 0.10,
+        "acousticness": 0.02, "popularity": 0.01, "release_year": 0.01,
+        "listening_context": 0.17, "language": 0.03, "instruments": 0.05,
+        "subgenre": 0.02, "explicit": 0.01, "avg_listener_age": 0.01,
+    },
+}
+
+def list_modes() -> List[str]:
+    """Return all available scoring mode names."""
+    return list(SCORING_MODES.keys())
+
+def score_song(user_prefs: Dict, song: Dict, weights: Dict) -> Tuple[float, List[str]]:
     """Score a single song against a user profile and return a (total_score, reasons) tuple."""
     reasons = []
 
-    # genre (0.30)
+    # genre (0.25)
     if user_prefs["favorite_genre"] == song["genre"]:
         genre_score = 1.0
     else:
         genre_score = GENRE_SIMILARITY.get((user_prefs["favorite_genre"], song["genre"]), 0.0)
     reasons.append(f"genre match: {genre_score:.2f}")
 
-    # energy (0.25)
+    # energy (0.20)
     energy_score = max(0.0, 1.0 - abs(song["energy"] - user_prefs["target_energy"]))
     reasons.append(f"energy match: {energy_score:.2f}")
 
-    # valence (0.20)
+    # valence (0.15)
     valence_target = MOOD_TO_VALENCE.get(user_prefs["favorite_mood"], 0.5)
     valence_score = max(0.0, 1.0 - abs(song["valence"] - valence_target))
     reasons.append(f"valence match: {valence_score:.2f}")
 
-    # mood (0.10)
+    # mood (0.08)
     if user_prefs["favorite_mood"] == song["mood"]:
         mood_score = 1.0
     else:
         mood_score = MOOD_SIMILARITY.get((user_prefs["favorite_mood"], song["mood"]), 0.0)
     reasons.append(f"mood match: {mood_score:.2f}")
 
-    # acousticness (0.05)
+    # acousticness (0.04)
     ac_target = 0.82 if user_prefs["likes_acoustic"] else 0.15
     acousticness_score = max(0.0, 1.0 - abs(song["acousticness"] - ac_target))
     reasons.append(f"acousticness match: {acousticness_score:.2f}")
 
-    # popularity (0.05)
+    # popularity (0.04)
     pop_target = 0.75 if user_prefs["likes_mainstream"] else 0.25
     popularity_score = max(0.0, 1.0 - abs((song["popularity"] / 100) - pop_target))
     reasons.append(f"popularity match: {popularity_score:.2f}")
 
-    # release_year (0.05)
+    # release_year (0.04)
     year_target = 2023 if user_prefs["prefers_recent"] else 2018
     year_score = max(0.0, 1.0 - abs((song["release_year"] - 2000) / 25 - (year_target - 2000) / 25))
     reasons.append(f"release year match: {year_score:.2f}")
 
+    # explicit (0.01)
+    explicit_score = 1.0 if user_prefs["allow_explicit"] or song["explicit"] == 0 else 0.0
+    reasons.append(f"explicit match: {explicit_score:.2f}")
+
+    # language (0.05)
+    language_score = 1.0 if song["language"] == user_prefs["preferred_language"] else 0.0
+    reasons.append(f"language match: {language_score:.2f}")
+
+    # instruments (0.04)
+    song_instruments = set(song["instruments"].split("|"))
+    preferred = user_prefs["preferred_instruments"]
+    if not preferred:
+        instruments_score = 0.5
+    else:
+        instruments_score = min(1.0, len(song_instruments & set(preferred)) / len(preferred))
+    reasons.append(f"instruments match: {instruments_score:.2f}")
+
+    # listening_context (0.06)
+    context_score = 1.0 if song["listening_context"] == user_prefs["listening_context"] else 0.0
+    reasons.append(f"listening context match: {context_score:.2f}")
+
+    # avg_listener_age (0.01)
+    age_score = max(0.0, 1.0 - abs(song["avg_listener_age"] - user_prefs["user_age"]) / 30)
+    reasons.append(f"listener age match: {age_score:.2f}")
+
+    # subgenre (0.03)
+    if song["subgenre"] == user_prefs["favorite_subgenre"]:
+        subgenre_score = 1.0
+    elif user_prefs["favorite_genre"] in song["subgenre"]:
+        subgenre_score = 0.5
+    else:
+        subgenre_score = 0.0
+    reasons.append(f"subgenre match: {subgenre_score:.2f}")
+
     total_score = (
-        genre_score * 0.30 +
-        energy_score * 0.25 +
-        valence_score * 0.20 +
-        mood_score * 0.10 +
-        acousticness_score * 0.05 +
-        popularity_score * 0.05 +
-        year_score * 0.05
+        genre_score        * weights["genre"] +
+        energy_score       * weights["energy"] +
+        valence_score      * weights["valence"] +
+        mood_score         * weights["mood"] +
+        acousticness_score * weights["acousticness"] +
+        popularity_score   * weights["popularity"] +
+        year_score         * weights["release_year"] +
+        explicit_score     * weights["explicit"] +
+        language_score     * weights["language"] +
+        instruments_score  * weights["instruments"] +
+        context_score      * weights["listening_context"] +
+        age_score          * weights["avg_listener_age"] +
+        subgenre_score     * weights["subgenre"]
     )
 
     return total_score, reasons
 
-def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
+def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5, mode: str = "balanced") -> List[Tuple[Dict, float, str]]:
     """Score all songs, rank them, and return the top-k as (song, score, explanation) tuples."""
-    scored = [(song, *score_song(user_prefs, song)) for song in songs]
+    weights = SCORING_MODES.get(mode, SCORING_MODES["balanced"])
+    scored = [(song, *score_song(user_prefs, song, weights)) for song in songs]
     ranked = sorted(scored, key=lambda x: (-x[1], x[0]["id"]))
     return [(song, score, " | ".join(reasons)) for song, score, reasons in ranked[:min(k, len(songs))]]
