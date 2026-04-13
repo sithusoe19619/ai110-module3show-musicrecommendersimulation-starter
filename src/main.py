@@ -12,6 +12,13 @@ You will implement the functions in recommender.py:
 import sys
 from recommender import load_songs, recommend_songs, list_modes
 
+try:
+    from tabulate import tabulate
+    HAS_TABULATE = True
+except ImportError:
+    HAS_TABULATE = False
+    print("Warning: tabulate not installed. Falling back to plain output. Run: pip install tabulate")
+
 
 def main() -> None:
     available = list_modes()
@@ -185,17 +192,53 @@ def main() -> None:
 
             print("\n" + "=" * 50)
             print(f"  Top Recommendations — {label}")
-            print(f"  Scoring mode: {mode}")
             print("=" * 50)
-            for i, (song, score, explanation) in enumerate(recommendations, start=1):
-                all_reasons = explanation.split(" | ")
-                contributing = [r for r in all_reasons if not r.endswith(": 0.00")]
-                zeroed = [r for r in all_reasons if r.endswith(": 0.00")]
-                top3 = sorted(contributing, key=lambda r: float(r.split(": ")[1]), reverse=True)[:3]
-                no_match = f"  ✗ {', '.join(r.split(' match')[0] for r in zeroed)}" if zeroed else ""
-                print(f"  #{i}  {song['title']} by {song['artist']}  [{score:.2f}]")
-                print(f"       ↑ {' · '.join(top3)}{no_match}")
-            print("\n" + "=" * 50)
+
+            # maps reason feature name → song dict key → display value
+            FEATURE_VALUE = {
+                "genre":            lambda s: s["genre"],
+                "energy":           lambda s: str(s["energy"]),
+                "valence":          lambda s: str(s["valence"]),
+                "mood":             lambda s: s["mood"],
+                "acousticness":     lambda s: str(s["acousticness"]),
+                "popularity":       lambda s: str(s["popularity"]),
+                "release year":     lambda s: str(s["release_year"]),
+                "explicit":         lambda s: "yes" if s["explicit"] else "no",
+                "language":         lambda s: s["language"],
+                "instruments":      lambda s: s["instruments"].replace("|", ", "),
+                "listening context":lambda s: s["listening_context"],
+                "listener age":     lambda s: str(s["avg_listener_age"]),
+                "subgenre":         lambda s: s["subgenre"],
+            }
+
+            def fmt_reason(reason_str, song):
+                # reason_str looks like "genre match: 0.85"
+                feature = reason_str.split(" match:")[0].strip()
+                score_val = reason_str.split(": ")[-1]
+                value = FEATURE_VALUE.get(feature, lambda s: "?")(song)
+                return f"{feature}: {value}({score_val})"
+
+            if HAS_TABULATE:
+                headers = ["#", "Title", "Artist", "Score",
+                           "Top Reasons [feature: value(score)]",
+                           "Weak Spots [feature: value(score)]"]
+                rows = []
+                for i, (song, score, explanation) in enumerate(recommendations, start=1):
+                    all_reasons = explanation.split(" | ")
+                    sorted_reasons = sorted(all_reasons, key=lambda r: float(r.split(": ")[-1]), reverse=True)
+                    top3 = "\n".join(fmt_reason(r, song) for r in sorted_reasons[:3])
+                    weak3 = "\n".join(fmt_reason(r, song) for r in sorted_reasons[-3:])
+                    rows.append([i, song["title"], song["artist"], f"{score:.2f}", top3, weak3])
+                print(tabulate(rows, headers=headers, tablefmt="grid"))
+            else:
+                for i, (song, score, explanation) in enumerate(recommendations, start=1):
+                    all_reasons = explanation.split(" | ")
+                    sorted_reasons = sorted(all_reasons, key=lambda r: float(r.split(": ")[-1]), reverse=True)
+                    top3 = " · ".join(fmt_reason(r, song) for r in sorted_reasons[:3])
+                    weak3 = " · ".join(fmt_reason(r, song) for r in sorted_reasons[-3:])
+                    print(f"  #{i}  {song['title']} by {song['artist']}  [{score:.2f}]")
+                    print(f"       ↑ {top3}")
+                    print(f"       ↓ {weak3}")
 
 
 if __name__ == "__main__":
